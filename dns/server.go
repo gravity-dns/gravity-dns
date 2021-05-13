@@ -2,7 +2,6 @@ package dns
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -45,55 +44,64 @@ type response struct {
 	Answer   []answer
 }
 
-func queryIP() net.IP {
+func queryIP() (net.IP, error) {
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: udpPort})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer conn.Close()
-	return nil
+	return nil, nil
 }
-func getDoH(addr string, t string) *response {
+
+func getDoH(addr string, t string) (*response, error) {
+	client := &http.Client{}
+
 	params := url.Values{}
 	params.Add("name", addr)
 	params.Add("type", t)
-	client := &http.Client{}
-	fmt.Println("query", cloudflare+params.Encode())
+
 	req, _ := http.NewRequest("GET", cloudflare+params.Encode(), nil)
 	req.Header.Set("accept", "application/dns-json")
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+
 	dohResponse := &response{}
 	if err = json.Unmarshal(body, dohResponse); err != nil {
-		panic(err)
+		return nil, err
 	}
-	return dohResponse
+	return dohResponse, nil
 }
-func StartServer() {
+
+func StartServer() error {
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: udpPort})
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer conn.Close()
-	log.Info("Starting DNS server")
+	log.Info("Gravity DNS server started")
 	for {
 		buf := make([]byte, packetLen)
 		_, addr, _ := conn.ReadFromUDP(buf)
 		var m dnsmessage.Message
 		if err := m.Unpack(buf); err != nil {
-			panic(err)
+			return err
 		}
-		fmt.Println(addr)
-		fmt.Println(m)
-		doh := getDoH(m.Questions[0].Name.String(), "A")
-		fmt.Println("verified ", doh.CD)
+
+		log.Debug("addr %v requested %s", addr, m.Questions[0].Name.String())
+
+		doh, err := getDoH(m.Questions[0].Name.String(), "A")
+		if err != nil {
+			return err
+		}
+
 		for _, ans := range doh.Answer {
 			ip := net.ParseIP(ans.Data).To4()
 			m.Response = doh.Status == 0
@@ -109,10 +117,10 @@ func StartServer() {
 		}
 		packed, err := m.Pack()
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if _, err := conn.WriteToUDP(packed, addr); err != nil {
-			panic(err)
+			return err
 		}
 	}
 }

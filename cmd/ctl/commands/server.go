@@ -18,7 +18,7 @@ var serverCmd = &cobra.Command{
 var startServerCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the Gravity DNS server.",
-	Run: func(cmd *cobra.Command, args []string) {
-		dns.StartServer()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return dns.StartServer()
 	},
 }
