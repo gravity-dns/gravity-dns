@@ -1,4 +1,4 @@
-package main
+package dns
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/dns/dnsmessage"
 )
 
@@ -75,13 +76,13 @@ func getDoH(addr string, t string) *response {
 	}
 	return dohResponse
 }
-func main() {
+func StartServer() {
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: udpPort})
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
-	fmt.Println("running dns server...")
+	log.Info("Starting DNS server")
 	for {
 		buf := make([]byte, packetLen)
 		_, addr, _ := conn.ReadFromUDP(buf)
