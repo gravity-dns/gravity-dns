@@ -4,8 +4,8 @@
 
 ### v0.01
 
-- [x] Normal DNS requests
-- [x] DNS-over-HTTPS (making requests)
+- [ ] Normal DNS requests
+- [ ] DNS-over-HTTPS (making requests)
 - [ ] DNS-over-TLS (accepting requests)
 - [ ] Custom DNS entries
 - [ ] Caching DNS entries for TTL
@@ -14,6 +14,7 @@
 ### v0.02
 
 - [ ] Dashboard
+- [ ] DNSSec
 - [ ] Custom DNS targets
 - [ ] Blacklist
 - [ ] DNS-over-HTTPS (accepting requests)
