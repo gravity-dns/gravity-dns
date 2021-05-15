@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/gravity-dns/gravity-dns/dns"
+	"github.com/gravity-dns/gravity-dns/server"
 	"github.com/spf13/cobra"
 )
 
@@ -19,6 +19,6 @@ var startServerCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the Gravity DNS server.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return dns.StartServer()
+		return server.Start()
 	},
 }
