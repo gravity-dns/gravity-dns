@@ -53,7 +53,7 @@ func doHTTPRequest(domain, queryType string) (*http.Response, error) {
 	return client.Do(req)
 }
 
-func ResolveOverDOH(domain, queryType string) (*DoHResponse, error) {
+func ResolveOverDoH(domain, queryType string) (*DoHResponse, error) {
 	resp, err := doHTTPRequest(domain, queryType)
 	if err != nil {
 		return nil, err

@@ -32,7 +32,7 @@ func Start() error {
 
 		log.Debug("addr %v requested %s", addr, m.Questions[0].Name.String())
 
-		doh, err := resolver.ResolveOverDOH(m.Questions[0].Name.String(), "A")
+		doh, err := resolver.ResolveOverDoH(m.Questions[0].Name.String(), "A")
 		if err != nil {
 			return err
 		}
