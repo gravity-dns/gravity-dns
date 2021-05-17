@@ -45,7 +45,7 @@ func doHTTPRequest(domain, queryType string) (*http.Response, error) {
 	params.Add("name", domain)
 	params.Add("type", queryType)
 
-	req, err := http.NewRequest("GET", dohPath+params.Encode(), nil)
+	req, err := http.NewRequest("GET", "https://1.1.1.1"+dohPath+params.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}

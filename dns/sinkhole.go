@@ -28,7 +28,7 @@ func (s *gravityDNS) ParseAdFile(filename string) error {
 			return errors.New("Invalid format " + text)
 		}
 
-		s.domains[split[1]] = split[0]
+		s.domains[split[1]+"."] = split[0]
 	}
 
 	return nil
