@@ -1,23 +1,15 @@
 package dns
 
 import (
-	"fmt"
+	"net"
 	"os"
 	"testing"
 )
-
-var sink *gravityDNS
 
 const (
 	adserverHosts = "../hostfiles/adservers.txt"
 	facebookHosts = "../hostfiles/facebook.txt"
 )
-
-func init() {
-	sink = new()
-	sink.ParseAdFile(adserverHosts)
-	sink.ParseAdFile(facebookHosts)
-}
 
 func createFakeFile(filename, content string) error {
 	f, err := os.Create(filename)
@@ -48,8 +40,8 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(s.domains) == 0 {
-		t.Fail()
+	if s.NumEntries() == 0 {
+		t.Fatalf("Num entries should be grater than zero")
 	}
 }
 
@@ -86,22 +78,54 @@ func TestThrowsAnErrorWhenInvalidFile_TooFewParts(t *testing.T) {
 	}
 }
 
-func TestIsAdIP(t *testing.T) {
-	badIP := "0.0.0.0"
-	goodIP := "1.1.1.1"
-	if !IsAdIP(badIP) {
-		t.Fatalf("IP: %s should be an ad\n", badIP)
-	}
-	if IsAdIP(goodIP) {
-		t.Fatalf("IP: %s should be a good ip not an ad\n", goodIP)
+func BenchmarkStandardLib(b *testing.B) {
+	sink := new()
+	sink.ParseAdFile(adserverHosts)
+	sink.ParseAdFile(facebookHosts)
+
+	for n := 0; n < b.N; n++ {
+		found, err := sink.RetrieveEntry(AEntry, "00v07c3k7o.kameleoon.eu")
+		if err != nil {
+			b.Fatal(err)
+		} else if found == nil {
+			b.Fatal("Retrived value is nil")
+		} else if found.A.String() != net.IPv4(0, 0, 0, 0).String() {
+			b.Fatal("Retrieved value is not correcte")
+		}
 	}
 }
 
-func BenchmarkStandardLib(b *testing.B) {
-	fmt.Printf("Size of map - %d\n", len(sink.domains))
+func BenchmarkRetrievalEmpty(b *testing.B) {
+	sink := new()
+	sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0))
+
 	for n := 0; n < b.N; n++ {
-		if sink.Resolve("00v07c3k7o.kameleoon.eu") != "0.0.0.0" {
-			b.Fail()
+		if _, err := sink.RetrieveEntry(AEntry, "scott.dev"); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkRetrievalFull(b *testing.B) {
+	sink := new()
+	sink.ParseAdFile(facebookHosts)
+	sink.ParseAdFile(adserverHosts)
+
+	sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0))
+
+	for n := 0; n < b.N; n++ {
+		if _, err := sink.RetrieveEntry(AEntry, "scott.dev"); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkWithoutLock(b *testing.B) {
+	sink := NewDNSEntries()
+	sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0))
+	for n := 0; n < b.N; n++ {
+		if _, err := sink.RetrieveEntry(AEntry, "scott.dev"); err != nil {
+			b.Fatal(err)
 		}
 	}
 }

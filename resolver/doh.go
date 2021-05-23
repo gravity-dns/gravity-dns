@@ -2,9 +2,13 @@ package resolver
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/dns/dnsmessage"
 )
 
 const (
@@ -38,12 +42,12 @@ type (
 	}
 )
 
-func doHTTPRequest(domain, queryType string) (*http.Response, error) {
+func doHTTPRequest(domain string, queryType dnsmessage.Type) (*http.Response, error) {
 	client := &http.Client{}
 
 	params := url.Values{}
 	params.Add("name", domain)
-	params.Add("type", queryType)
+	params.Add("type", fmt.Sprint(queryType))
 
 	req, err := http.NewRequest("GET", "https://1.1.1.1"+dohPath+params.Encode(), nil)
 	if err != nil {
@@ -53,7 +57,7 @@ func doHTTPRequest(domain, queryType string) (*http.Response, error) {
 	return client.Do(req)
 }
 
-func ResolveOverDoH(domain, queryType string) (*DoHResponse, error) {
+func ResolveOverDoH(domain string, queryType dnsmessage.Type) (*DoHResponse, error) {
 	resp, err := doHTTPRequest(domain, queryType)
 	if err != nil {
 		return nil, err
@@ -68,5 +72,6 @@ func ResolveOverDoH(domain, queryType string) (*DoHResponse, error) {
 	if err = json.Unmarshal(body, dohResponse); err != nil {
 		return nil, err
 	}
+	log.Printf("DOH: %v\n", dohResponse)
 	return dohResponse, nil
 }

@@ -3,11 +3,14 @@ package dns
 import (
 	"bufio"
 	"errors"
+	"net"
 	"os"
 	"strings"
 )
 
-const addIP = "0.0.0.0"
+type Sinkhole interface {
+	ParseAdFile(string) error
+}
 
 func (s *gravityDNS) ParseAdFile(filename string) error {
 	file, err := os.Open(filename)
@@ -28,12 +31,8 @@ func (s *gravityDNS) ParseAdFile(filename string) error {
 			return errors.New("Invalid format " + text)
 		}
 
-		s.domains[split[1]+"."] = split[0]
+		s.AddNewEntry(AEntry, split[1]+".", net.IPv4(0, 0, 0, 0))
 	}
 
 	return nil
-}
-
-func IsAdIP(ip string) bool {
-	return ip == addIP
 }

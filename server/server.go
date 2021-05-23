@@ -4,7 +4,6 @@ import (
 	"net"
 
 	"github.com/gravity-dns/gravity-dns/dns"
-	"github.com/gravity-dns/gravity-dns/resolver"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/dns/dnsmessage"
 )
@@ -31,70 +30,64 @@ func Start() error {
 		return err
 	}
 	defer conn.Close()
-	log.Info("Gravity DNS server started")
+
+	log.Infof("Gravity DNS server listening on port %d", udpPort)
 	for {
 		buf := make([]byte, packetLen)
 		_, addr, _ := conn.ReadFromUDP(buf)
+
 		var m dnsmessage.Message
 		if err := m.Unpack(buf); err != nil {
 			return err
 		}
 
-		query := m.Questions[0].Name.String()
-		log.Info(m)
-		log.Info("addr %v requested %s", addr, query)
-
-		resolved := gravity.Resolve(query)
-		if resolved != "" {
-			log.Info("Gravity resolved ", query, " - ", resolved)
-
-			ip := net.ParseIP(resolved).To4()
-			m.Response = true
-			m.Answers = append(m.Answers, dnsmessage.Resource{
-				Header: dnsmessage.ResourceHeader{
-					Name:  dnsmessage.MustNewName(query),
-					Type:  m.Questions[0].Type,
-					Class: m.Questions[0].Class,
-					TTL:   uint32(10000),
-				},
-				Body: &dnsmessage.AResource{A: [4]byte{ip[0], ip[1], ip[2], ip[3]}},
-			})
-			packed, err := m.Pack()
-			if err != nil {
-				return err
-			}
-			if _, err := conn.WriteToUDP(packed, addr); err != nil {
-				return err
-			}
+		if len(m.Questions) == 0 {
+			log.Error("Invalid question length of 0")
 			continue
 		}
 
-		doh, err := resolver.ResolveOverDoH(m.Questions[0].Name.String(), "A")
-		if err != nil {
-			return err
-		}
+		go func() {
+			m.Response = true
+			for _, question := range m.Questions {
+				log.Infof("%v requesting %s type %d", addr, question.Name.String(), question.Type)
 
-		var ip net.IP
-		for _, ans := range doh.Answer {
-			ip = net.ParseIP(ans.Data).To4()
-			m.Response = doh.Status == 0
-			m.Answers = append(m.Answers, dnsmessage.Resource{
-				Header: dnsmessage.ResourceHeader{
-					Name:  dnsmessage.MustNewName(ans.Name + "."),
-					Type:  m.Questions[0].Type,
-					Class: m.Questions[0].Class,
-					TTL:   uint32(ans.TTL),
-				},
-				Body: &dnsmessage.AResource{A: [4]byte{ip[0], ip[1], ip[2], ip[3]}},
-			})
-		}
-		packed, err := m.Pack()
-		if err != nil {
-			return err
-		}
-		if _, err := conn.WriteToUDP(packed, addr); err != nil {
-			return err
-		}
-		gravity.Set(query, ip.String())
+				query := question.Name.String()
+				t := dns.DNSTypeToGravity(question.Type)
+				resolved, err := gravity.RetrieveAndSet(t, query)
+				if err != nil {
+					log.Error(err)
+					continue
+				}
+
+				for _, val := range resolved {
+					dnsEntry, err := dns.GravityEntryToResourceBody(t, val)
+					if err != nil {
+						log.Error(err)
+						continue
+					}
+
+					m.Answers = append(m.Answers, dnsmessage.Resource{
+						Header: dnsmessage.ResourceHeader{
+							Name:  dnsmessage.MustNewName(query),
+							Type:  question.Type,
+							Class: question.Class,
+							TTL:   100,
+						},
+						Body: dnsEntry,
+					})
+				}
+			}
+
+			packed, err := m.Pack()
+			if err != nil {
+				log.Error(err)
+				// return err
+			}
+			if _, err := conn.WriteToUDP(packed, addr); err != nil {
+				log.Error(err)
+				// return err
+			}
+		}()
+
 	}
 }
