@@ -89,7 +89,7 @@ func BenchmarkStandardLib(b *testing.B) {
 			b.Fatal(err)
 		} else if found == nil {
 			b.Fatal("Retrived value is nil")
-		} else if found.A.String() != net.IPv4(0, 0, 0, 0).String() {
+		} else if found[0].A.String() != net.IPv4(0, 0, 0, 0).String() {
 			b.Fatal("Retrieved value is not correcte")
 		}
 	}

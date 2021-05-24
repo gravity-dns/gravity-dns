@@ -13,7 +13,7 @@ type (
 		Sinkhole
 
 		NumEntries() int
-		RetrieveAndSet(entryType EntryType, domain string) ([]*EntryValue, error)
+		RetrieveAndSet(entryType EntryType, domain string) ([]EntryValue, error)
 	}
 
 	gravityDNS struct {
@@ -35,8 +35,8 @@ func new() *gravityDNS {
 	}
 }
 
-func (g *gravityDNS) RetrieveAndSet(entryType EntryType, domain string) ([]*EntryValue, error) {
-	values := []*EntryValue{}
+func (g *gravityDNS) RetrieveAndSet(entryType EntryType, domain string) ([]EntryValue, error) {
+	values := []EntryValue{}
 	resolved, err := g.RetrieveEntry(entryType, domain)
 	if err != nil && err.Error() != ErrDomainNotFound {
 		return values, err
@@ -64,7 +64,7 @@ func (g *gravityDNS) RetrieveAndSet(entryType EntryType, domain string) ([]*Entr
 			return values, nil
 		}
 
-		values = append(values, &newValue)
+		values = append(values, newValue)
 		g.AddNewEntry(entryType, domain, data)
 	}
 
@@ -78,7 +78,7 @@ func (g *gravityDNS) AddNewEntry(entryType EntryType, domain string, value inter
 	return g.dns.AddNewEntry(entryType, domain, value)
 }
 
-func (g *gravityDNS) RetrieveEntry(entryType EntryType, domain string) ([]*EntryValue, error) {
+func (g *gravityDNS) RetrieveEntry(entryType EntryType, domain string) ([]EntryValue, error) {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
 	return g.dns.RetrieveEntry(entryType, domain)

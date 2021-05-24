@@ -2,7 +2,6 @@ package dns
 
 import (
 	"errors"
-	"log"
 
 	"golang.org/x/net/dns/dnsmessage"
 )
@@ -51,7 +50,6 @@ func GravtiyTypeToDNSMessage(t EntryType) dnsmessage.Type {
 }
 
 func GravityEntryToResourceBody(entryType EntryType, data *EntryValue) (dnsmessage.ResourceBody, error) {
-	log.Println(entryType, data)
 	switch entryType {
 	case AEntry:
 		val := data.A.To4()

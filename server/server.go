@@ -60,7 +60,7 @@ func Start() error {
 				}
 
 				for _, val := range resolved {
-					dnsEntry, err := dns.GravityEntryToResourceBody(t, val)
+					dnsEntry, err := dns.GravityEntryToResourceBody(t, &val)
 					if err != nil {
 						log.Error(err)
 						continue

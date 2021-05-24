@@ -41,7 +41,6 @@ func createDNSQuery(id uint16, domain, queryType string) ([]byte, error) {
 	}
 
 	name, err := dnsmessage.NewName(domain + ".")
-	log.Println("domain " + name.String())
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +90,6 @@ func ResolverOverDNS(domain, queryType string) ([]dnsmessage.Resource, error) {
 		if !m.Header.Response || m.Header.ID != queryID {
 			continue
 		}
-		log.Println(m)
 		return m.Answers, nil
 	}
 }

@@ -43,7 +43,7 @@ type (
 	}
 	DNSEntries interface {
 		AddNewEntry(EntryType, string, interface{}) (*Entry, error)
-		RetrieveEntry(EntryType, string) ([]*EntryValue, error)
+		RetrieveEntry(EntryType, string) ([]EntryValue, error)
 	}
 )
 
@@ -92,7 +92,7 @@ func (e *Entry) AddNewEntry(entryType EntryType, domain string, value interface{
 	return prev, nil
 }
 
-func (e *Entry) RetrieveEntry(entryType EntryType, domain string) ([]*EntryValue, error) {
+func (e *Entry) RetrieveEntry(entryType EntryType, domain string) ([]EntryValue, error) {
 	splits := strings.Split(domain, ".")
 	if len(splits) < 2 {
 		return nil, errors.New(ErrInvalidDomain)
@@ -113,10 +113,10 @@ func (e *Entry) RetrieveEntry(entryType EntryType, domain string) ([]*EntryValue
 		prev = curr
 	}
 
-	values := []*EntryValue{}
+	values := []EntryValue{}
 	for _, val := range prev.Values {
 		if val.EntryType == entryType {
-			values = append(values, &val)
+			values = append(values, val)
 		}
 	}
 	if len(values) == 0 {

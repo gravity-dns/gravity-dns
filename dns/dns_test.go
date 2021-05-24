@@ -10,7 +10,7 @@ func TestSetAndResolve(t *testing.T) {
 	domain := "cool-domain.dev"
 	ip := net.IPv4(0, 0, 0, 0)
 	s.AddNewEntry(AEntry, domain, ip)
-	if resolvedIP, err := s.RetrieveEntry(AEntry, domain); err != nil && resolvedIP.A.String() != ip.String() {
-		t.Fatalf("Resolve expected %s got %s\n", ip.String(), resolvedIP.A.String())
+	if resolvedIP, err := s.RetrieveEntry(AEntry, domain); err != nil && resolvedIP[0].A.String() != ip.String() {
+		t.Fatalf("Resolve expected %s got %s\n", ip.String(), resolvedIP[0].A.String())
 	}
 }

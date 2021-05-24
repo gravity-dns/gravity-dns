@@ -17,7 +17,7 @@ func TestCanRetrieveValue(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if found.A.String() != net.IPv4(1, 1, 1, 1).String() {
+	if found[0].A.String() != net.IPv4(1, 1, 1, 1).String() {
 		t.Fatalf("Expected 1.1.1.1 got %v", found)
 	}
 
@@ -25,7 +25,7 @@ func TestCanRetrieveValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if found.A.String() != net.IPv4(4, 0, 0, 0).String() {
+	if found[0].A.String() != net.IPv4(4, 0, 0, 0).String() {
 		t.Fatalf("Expected 0.0.0.0 got %v", found)
 	}
 }
@@ -39,8 +39,8 @@ func TestCanRetrieveDifferentType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if found.A.String() != net.IPv4(1, 1, 1, 1).String() {
-		t.Fatalf("Expected 1.1.1.1 got %v", found)
+	if found[0].A.String() != net.IPv4(1, 1, 1, 1).String() {
+		t.Fatalf("Expected 1.1.1.1 got %v", found[0].A.String())
 	}
 
 	found, err = entries.RetrieveEntry(AAAAEntry, "scott.richardson")
@@ -48,7 +48,7 @@ func TestCanRetrieveDifferentType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if found.AAAA.String() != net.ParseIP("::1").String() {
+	if found[0].AAAA.String() != net.ParseIP("::1").String() {
 		t.Fatalf("Expected ::1 got %v\n", found)
 	}
 }
@@ -66,8 +66,8 @@ func TestCanAddAndRetrieveTextValues(t *testing.T) {
 	} else if found == nil {
 		t.Fatal("Found is nil")
 	} else {
-		if found.TXT != entry {
-			t.Fatalf("TXT entry invalid. Expected %s got %s", domain, found.TXT)
+		if found[0].TXT != entry {
+			t.Fatalf("TXT entry invalid. Expected %s got %s", domain, found[0].TXT)
 		}
 	}
 }
