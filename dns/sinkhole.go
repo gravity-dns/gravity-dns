@@ -31,7 +31,9 @@ func (s *gravityDNS) ParseAdFile(filename string) error {
 			return errors.New("Invalid format " + text)
 		}
 
-		s.AddNewEntry(AEntry, split[1]+".", net.IPv4(0, 0, 0, 0))
+		if _, err := s.AddNewEntry(AEntry, split[1]+".", net.IPv4(0, 0, 0, 0)); err != nil {
+			return err
+		}
 	}
 
 	return nil

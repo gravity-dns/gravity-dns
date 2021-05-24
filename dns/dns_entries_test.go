@@ -9,8 +9,12 @@ import (
 
 func TestCanRetrieveValue(t *testing.T) {
 	entries := NewDNSEntries()
-	entries.AddNewEntry(AEntry, "scottrichardson.dev", net.IPv4(1, 1, 1, 1))
-	entries.AddNewEntry(AEntry, "dev.scottrichardson.dev", net.IPv4(4, 0, 0, 0))
+	if _, err := entries.AddNewEntry(AEntry, "scottrichardson.dev", net.IPv4(1, 1, 1, 1)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := entries.AddNewEntry(AEntry, "dev.scottrichardson.dev", net.IPv4(4, 0, 0, 0)); err != nil {
+		t.Fatal(err)
+	}
 
 	found, err := entries.RetrieveEntry(AEntry, "scottrichardson.dev")
 	if err != nil {
@@ -32,8 +36,12 @@ func TestCanRetrieveValue(t *testing.T) {
 
 func TestCanRetrieveDifferentType(t *testing.T) {
 	entries := NewDNSEntries()
-	entries.AddNewEntry(AEntry, "scott.richardson", net.IPv4(1, 1, 1, 1))
-	entries.AddNewEntry(AAAAEntry, "scott.richardson", net.ParseIP("::1"))
+	if _, err := entries.AddNewEntry(AEntry, "scott.richardson", net.IPv4(1, 1, 1, 1)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := entries.AddNewEntry(AAAAEntry, "scott.richardson", net.ParseIP("::1")); err != nil {
+		t.Fatal(err)
+	}
 
 	found, err := entries.RetrieveEntry(AEntry, "scott.richardson")
 	if err != nil {

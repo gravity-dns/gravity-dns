@@ -45,11 +45,13 @@ func createDNSQuery(id uint16, domain, queryType string) ([]byte, error) {
 		return nil, err
 	}
 
-	msg.Question(dnsmessage.Question{
+	if err := msg.Question(dnsmessage.Question{
 		Name:  name,
 		Type:  dnsmessage.TypeA,
 		Class: dnsmessage.ClassINET,
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	msg.EnableCompression()
 	return msg.Finish()

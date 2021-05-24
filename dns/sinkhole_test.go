@@ -54,7 +54,9 @@ func TestThrowsErrorWhenNoFile(t *testing.T) {
 
 func TestThrowsAnErrorWhenInvalidFile_TooManyParts(t *testing.T) {
 	s := New()
-	createFakeFile("test.txt", "i am invalid because I have too many parts")
+	if err := createFakeFile("test.txt", "i am invalid because I have too many parts"); err != nil {
+		t.Fatal(err)
+	}
 	defer func() {
 		if err := deleteFakeFile("test.txt"); err != nil {
 			t.Fatal(err)
@@ -67,7 +69,9 @@ func TestThrowsAnErrorWhenInvalidFile_TooManyParts(t *testing.T) {
 
 func TestThrowsAnErrorWhenInvalidFile_TooFewParts(t *testing.T) {
 	s := New()
-	createFakeFile("test.txt", "invalid")
+	if err := createFakeFile("test.txt", "invalid"); err != nil {
+		t.Fatal(err)
+	}
 	defer func() {
 		if err := deleteFakeFile("test.txt"); err != nil {
 			t.Fatal(err)
@@ -80,8 +84,12 @@ func TestThrowsAnErrorWhenInvalidFile_TooFewParts(t *testing.T) {
 
 func BenchmarkStandardLib(b *testing.B) {
 	sink := new()
-	sink.ParseAdFile(adserverHosts)
-	sink.ParseAdFile(facebookHosts)
+	if err := sink.ParseAdFile(adserverHosts); err != nil {
+		b.Fatal(err)
+	}
+	if err := sink.ParseAdFile(facebookHosts); err != nil {
+		b.Fatal(err)
+	}
 
 	for n := 0; n < b.N; n++ {
 		found, err := sink.RetrieveEntry(AEntry, "00v07c3k7o.kameleoon.eu")
@@ -97,7 +105,9 @@ func BenchmarkStandardLib(b *testing.B) {
 
 func BenchmarkRetrievalEmpty(b *testing.B) {
 	sink := new()
-	sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0))
+	if _, err := sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0)); err != nil {
+		b.Fatal(err)
+	}
 
 	for n := 0; n < b.N; n++ {
 		if _, err := sink.RetrieveEntry(AEntry, "scott.dev"); err != nil {
@@ -108,10 +118,16 @@ func BenchmarkRetrievalEmpty(b *testing.B) {
 
 func BenchmarkRetrievalFull(b *testing.B) {
 	sink := new()
-	sink.ParseAdFile(facebookHosts)
-	sink.ParseAdFile(adserverHosts)
+	if err := sink.ParseAdFile(facebookHosts); err != nil {
+		b.Fatal(err)
+	}
+	if err := sink.ParseAdFile(adserverHosts); err != nil {
+		b.Fatal(err)
+	}
 
-	sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0))
+	if _, err := sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0)); err != nil {
+		b.Fatal(err)
+	}
 
 	for n := 0; n < b.N; n++ {
 		if _, err := sink.RetrieveEntry(AEntry, "scott.dev"); err != nil {
@@ -122,7 +138,9 @@ func BenchmarkRetrievalFull(b *testing.B) {
 
 func BenchmarkWithoutLock(b *testing.B) {
 	sink := NewDNSEntries()
-	sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0))
+	if _, err := sink.AddNewEntry(AEntry, "scott.dev", net.IPv4(0, 0, 0, 0)); err != nil {
+		b.Fatal(err)
+	}
 	for n := 0; n < b.N; n++ {
 		if _, err := sink.RetrieveEntry(AEntry, "scott.dev"); err != nil {
 			b.Fatal(err)

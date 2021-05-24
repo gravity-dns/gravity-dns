@@ -65,7 +65,9 @@ func (g *gravityDNS) RetrieveAndSet(entryType EntryType, domain string) ([]Entry
 		}
 
 		values = append(values, newValue)
-		g.AddNewEntry(entryType, domain, data)
+		if _, err := g.AddNewEntry(entryType, domain, data); err != nil {
+			return nil, err
+		}
 	}
 
 	return values, nil
