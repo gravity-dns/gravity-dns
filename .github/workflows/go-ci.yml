@@ -34,12 +34,3 @@ jobs:
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.29
-  slack:
-    name: Send Slack Notification
-    uses: 8398a7/action-slack@v3
-    with: 
-      status: ${{ job.status }}
-      fields: repo,message,commit,author,eventName,ref,workflow,job,took
-    env: 
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    if: always()
